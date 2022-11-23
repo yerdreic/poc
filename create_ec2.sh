@@ -17,7 +17,7 @@ if [[ "$IS_SG_EXISTS" == $SG_NAME ]]; then
     SG_ID=$(aws ec2 describe-security-groups --filters "Name=tag:$SG_TAG_KEY,Values=$SG_TAG_VAL" --query "SecurityGroups[*].{Name:GroupId}" --output text)
 else
     echo "Creating Security Group ..."
-    SG_ID=$(aws ec2 create-security-group --group-name $SG_NAME --description $SG_DESCRIPTION --tag-specifications "ResourceType=security-group,Tags=[{Key=$SG_TAG_KEY,Value=$SG_TAG_VAL}]"  | jq -r .GroupId)
+    SG_ID=$(aws ec2 create-security-group --group-name $SG_NAME --description "$SG_DESCRIPTION" --tag-specifications "ResourceType=security-group,Tags=[{Key=$SG_TAG_KEY,Value=$SG_TAG_VAL}]"  | jq -r .GroupId)
     aws ec2 authorize-security-group-ingress --group-id $SG_ID --protocol tcp --port 22 --cidr '0.0.0.0/0' --output text > /dev/null
 fi
 
