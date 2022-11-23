@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+set -euo pipefail
+
 source config.sh
 
 aws ec2 delete-key-pair --key-name $SSH_KEY_NAME

@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
+
+set -euo pipefail
+
 source config.sh
 
 aws ec2 create-key-pair \
 --key-name $SSH_KEY_NAME \
 --query 'KeyMaterial' --output text > $SSH_PRIVATE_FILE_NAME
- 
+
 chmod 600 $SSH_PRIVATE_FILE_NAME
 
 IS_SG_EXISTS=$(aws ec2 describe-security-groups --filters "Name=tag:$SG_TAG_KEY,Values=$SG_TAG_VAL" --query "SecurityGroups[*].{Name:GroupName}" --output text)
