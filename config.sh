@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 #variables
-SSH_KEY_NAME="poc-aws-key"
-SSH_PRIVATE_FILE_NAME="poc-aws-key.pem"
+SSH_KEY_NAME="${USER}-poc-aws-key"
+SSH_PRIVATE_FILE_NAME="${USER}-poc-aws-key.pem"
 SG_NAME="poc-aws"
 SG_TAG_KEY="Name"
 SG_TAG_VAL="poc-aws"
