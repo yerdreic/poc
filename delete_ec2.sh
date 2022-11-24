@@ -13,3 +13,8 @@ if [[ -n $EC2_INSTANCE_ID ]]; then
 fi
 
 rm -rf $SSH_PRIVATE_FILE_NAME
+
+# There is a minimum of 7 days wait between secret deletion request and the
+# actual deletion. Therefore, the command is commented out.
+
+# aws secretsmanager delete-secret --name $PROJECT_NAME

@@ -55,3 +55,12 @@ aws ec2 run-instances \
 --security-group-ids $SG_ID \
 --iam-instance-profile Name=$PROFILE_NAME \
 --tag-specifications "ResourceType=instance,Tags=[{Key=$EC2_TAG_KEY,Value=$EC2_TAG_VAL}]" > /dev/null
+
+# There is a minimum of 7 days wait between secret deletion request and the
+# actual deletion. Therefore, the command is commented out. Created the secret
+# manually.
+
+# aws secretsmanager create-secret \
+#     --name $PROJECT_NAME \
+#     --description "POC Secret" \
+#     --secret-string "{\"user\":\"yael\",\"password\":\"EXAMPLE-PASSWORD\"}"
