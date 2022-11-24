@@ -31,7 +31,7 @@ if [[ -n $IS_SSH_EXIST ]]; then
     echo "SSH key Already Exists, Skipping ..."
 else
     echo "Creating SSH key-pair..."
-    aws ec2 create-key-pair --key-name $SSH_KEY_NAME --output text > $SSH_PRIVATE_FILE_NAME
+    aws ec2 create-key-pair --key-name $SSH_KEY_NAME --query 'KeyMaterial' --output text > $SSH_PRIVATE_FILE_NAME
     chmod 400 $SSH_PRIVATE_FILE_NAME
 fi
 
@@ -54,4 +54,4 @@ aws ec2 run-instances \
 --key-name $SSH_KEY_NAME \
 --security-group-ids $SG_ID \
 --iam-instance-profile Name=$PROFILE_NAME \
---tag-specifications "ResourceType=instance,Tags=[{Key=$EC2_TAG_KEY,Value=$EC2_TAG_VAL}]"
+--tag-specifications "ResourceType=instance,Tags=[{Key=$EC2_TAG_KEY,Value=$EC2_TAG_VAL}]" > /dev/null
