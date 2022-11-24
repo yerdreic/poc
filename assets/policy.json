@@ -4,12 +4,15 @@
         {
             "Effect": "Allow",
             "Action": [
-                "directconnect:Describe*",
-                "directconnect:List*",
-                "ec2:DescribeVpnGateways",
-                "ec2:DescribeTransitGateways"
+                "secretsmanager:GetResourcePolicy",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+                "secretsmanager:ListSecretVersionIds",
+                "secretsmanager:ListSecrets"
             ],
-            "Resource": "*"
+            "Resource": [
+                "*"
+            ]
         }
     ]
 }
