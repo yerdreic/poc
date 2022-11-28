@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 #variables
+PROJECT_NAME="poc"
 SSH_KEY_NAME="${USER}-poc-aws-key"
 SSH_PRIVATE_FILE_NAME="${USER}-poc-aws-key.pem"
 SG_NAME="poc-aws"
