@@ -3,5 +3,8 @@
         "config:base",
         ":enablePreCommit"
     ],
-    "automerge": false
+    "automerge": false,
+    "schedule": [
+        "every weekend"
+    ]
 }
