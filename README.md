@@ -66,3 +66,16 @@ make rm
 
 [1]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 [2]: https://github.com/renovatebot/renovate
+
+## PROD environment
+
+### System Requirements
+
+- `make`
+- `ansible`
+
+### Provisioning
+
+```shell
+make provision
+```

@@ -1,4 +1,4 @@
-.PHONY: build run logs rm
+.PHONY: build run logs rm provision
 
 build:
 	podman build -t consumer ./consumer
@@ -12,3 +12,6 @@ logs:
 rm:
 	podman stop consumer
 	podman rm consumer
+
+provision:
+	ansible-playbook ./provision/main.yml
