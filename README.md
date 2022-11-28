@@ -73,6 +73,16 @@ make rm
 
 - `make`
 - `ansible`
+- `terraform`
+- `awscli`
+
+### Infra bootstrapping
+
+```shell
+make infra-format
+make infra-plan
+make infra-apply
+```
 
 ### Provisioning
 
