@@ -82,6 +82,7 @@ make rm
 make infra-format
 make infra-plan
 make infra-apply
+make infra-destroy
 ```
 
 ### Provisioning
