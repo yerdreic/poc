@@ -15,8 +15,6 @@ pip install --user pre-commit
 pre-commit install
 ```
 
-A POC for running a workload in AWS while pulling secrets from AWS secrets manager
-
 ## Dependencies update
 
 [Renovate](https://github.com/renovatebot/renovate) takes care of it
