@@ -79,7 +79,6 @@ make rm
 ### Infra bootstrapping
 
 ```shell
-make infra-format
 make infra-plan
 make infra-apply
 make infra-destroy
