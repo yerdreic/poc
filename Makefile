@@ -13,9 +13,6 @@ rm:
 	podman stop consumer
 	podman rm consumer
 
-infra-format:
-	terraform -chdir=infra fmt
-
 infra-plan:
 	terraform -chdir=infra init
 	terraform -chdir=infra plan
