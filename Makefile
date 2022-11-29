@@ -24,4 +24,4 @@ infra-destroy:
 	terraform -chdir=infra destroy
 
 provision:
-	ansible-playbook ./provision/main.yml
+	ANSIBLE_CONFIG="./provision/ansible.cfg" ansible-playbook ./provision/main.yml
