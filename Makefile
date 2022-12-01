@@ -1,4 +1,4 @@
-.PHONY: build run logs rm infra-plan infra-apply infra-destroy provision
+.PHONY: build run logs rm infra-plan infra-apply provision up down
 
 build:
 	podman build -t consumer ./consumer
@@ -18,10 +18,12 @@ infra-plan:
 	terraform -chdir=infra plan
 
 infra-apply:
-	terraform -chdir=infra apply
+	-terraform -chdir=infra apply -auto-approve
 
-infra-destroy:
-	terraform -chdir=infra destroy
+up: infra-apply provision
+
+down:
+	terraform -chdir=infra destroy -auto-approve
 
 provision:
 	ANSIBLE_CONFIG="./provision/ansible.cfg" ansible-playbook ./provision/main.yml
