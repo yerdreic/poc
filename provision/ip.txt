@@ -1,1 +1,0 @@
-3.64.60.66 ansible_user=centos ansible_ssh_private_key_file=~/.ssh/poc-aws-key.pem ansible_connection=ssh

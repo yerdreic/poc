@@ -64,28 +64,31 @@ make logs
 make rm
 ```
 
-[1]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
-[2]: https://github.com/renovatebot/renovate
-
 ## PROD environment
 
 ### System Requirements
 
 - `make`
 - `ansible`
+- [`ansible aws plugin`][3]
+- `python` >= 3.6
+- `boto3` >= 1.18.0
+- `botocore` >= 1.21.0
 - `terraform`
 - `awscli`
 
-### Infra bootstrapping
+### Environment Up
 
 ```shell
-make infra-plan
-make infra-apply
-make infra-destroy
+make up
 ```
 
-### Provisioning
+### Environment Down
 
 ```shell
-make provision
+make down
 ```
+
+[1]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
+[2]: https://github.com/renovatebot/renovate
+[3]: https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html
