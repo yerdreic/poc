@@ -12,7 +12,22 @@ terraform {
 provider "aws" {
   region = var.aws_region
   default_tags {
-    tags = merge(var.tags, { user = var.user })
+    tags = merge(var.tags, { User = var.user })
+  }
+}
+
+data "aws_ami" "centos_stream_8" {
+  most_recent = true
+  owners      = ["125523088429"]
+
+  filter {
+    name   = "name"
+    values = ["CentOS Stream 8 *"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
   }
 }
 
@@ -108,7 +123,7 @@ resource "aws_instance" "poc_instance" {
   depends_on = [
     tls_private_key.poc_rsa
   ]
-  ami                    = var.image_id
+  ami                    = data.aws_ami.centos_stream_8.id
   instance_type          = var.ec2_type
   vpc_security_group_ids = [aws_security_group.poc_allow_ssh.id]
   iam_instance_profile   = aws_iam_instance_profile.poc_ec2_profile.name

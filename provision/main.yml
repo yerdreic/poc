@@ -23,3 +23,6 @@
         detach: true
         state: started
         recreate: true
+        env:
+          SECRET_NAME: "poc"
+          REGION: "{{ lookup('env','REGION') }}"

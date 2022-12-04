@@ -13,11 +13,6 @@ variable "sg_name" {
   default = "poc-aws"
 }
 
-variable "image_id" {
-  type    = string
-  default = "ami-0b79da023fb461a12"
-}
-
 variable "ec2_type" {
   type    = string
   default = "t2.micro"
@@ -55,7 +50,7 @@ variable "user" {
 
 variable "tags" {
   type        = map(string)
-  default     = { "project" = "POC" }
+  default     = { "Project" = "POC" }
   description = "Resource tags"
 }
 
