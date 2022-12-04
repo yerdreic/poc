@@ -12,7 +12,7 @@ terraform {
 provider "aws" {
   region = var.aws_region
   default_tags {
-    tags = var.tags
+    tags = merge(var.tags, { user = var.user })
   }
 }
 
@@ -113,9 +113,7 @@ resource "aws_instance" "poc_instance" {
   vpc_security_group_ids = [aws_security_group.poc_allow_ssh.id]
   iam_instance_profile   = aws_iam_instance_profile.poc_ec2_profile.name
   key_name               = aws_key_pair.poc_key_pair.key_name
-  tags = {
-    Name = var.ec2_name
-  }
+  tags                   = merge(var.tags, { Name = var.ec2_name })
 }
 
 resource "aws_secretsmanager_secret" "poc_secret" {
