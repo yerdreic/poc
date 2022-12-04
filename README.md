@@ -70,7 +70,6 @@ make rm
 
 - `make`
 - `ansible`
-- [`ansible aws plugin`][3]
 - `python` >= 3.6
 - `boto3` >= 1.18.0
 - `botocore` >= 1.21.0
@@ -91,4 +90,3 @@ make down
 
 [1]: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html
 [2]: https://github.com/renovatebot/renovate
-[3]: https://docs.ansible.com/ansible/latest/collections/amazon/aws/aws_ec2_inventory.html

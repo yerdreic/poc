@@ -26,4 +26,5 @@ down:
 	terraform -chdir=infra destroy -auto-approve
 
 provision:
+	ansible-galaxy install -r ./provision/requirements.yml
 	ANSIBLE_CONFIG="./provision/ansible.cfg" ansible-playbook ./provision/main.yml
