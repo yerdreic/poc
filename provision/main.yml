@@ -10,8 +10,14 @@
     - name: Gather facts for first time
       ansible.builtin.setup:
 
-    - name: podman present
+    - name: Podman present
       ansible.builtin.dnf:
         name: podman
         update_cache: yes
         state: present
+
+    - name: run container
+      containers.podman.podman_container:
+        image: ghcr.io/coffr/poc:main
+        name: poc
+        detach: true

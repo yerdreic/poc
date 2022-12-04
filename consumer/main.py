@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 def main():
 
     secret_name = "poc"
-    region_name = "eu-west-2"
+    region_name = "eu-central-1"
 
     # Create a Secrets Manager client
     session = boto3.session.Session()
