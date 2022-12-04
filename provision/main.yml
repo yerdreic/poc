@@ -1,7 +1,6 @@
 - hosts: all
-  become: yes
   debugger: on_failed
-  gather_facts: no
+  gather_facts: false
 
   tasks:
     - name: Wait until the instance is ready
@@ -10,8 +9,17 @@
     - name: Gather facts for first time
       ansible.builtin.setup:
 
-    - name: podman present
+    - name: Podman present
+      become: true
       ansible.builtin.dnf:
         name: podman
-        update_cache: yes
+        update_cache: true
         state: present
+
+    - name: Run consumer container
+      containers.podman.podman_container:
+        name: consumer
+        image: ghcr.io/coffr/poc:main
+        detach: true
+        state: started
+        recreate: true
