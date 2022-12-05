@@ -25,4 +25,4 @@
         recreate: true
         env:
           SECRET_NAME: "poc"
-          REGION: "{{ lookup('env','REGION') }}"
+          REGION: "{{ REGION }}"
