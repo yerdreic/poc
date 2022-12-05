@@ -15,10 +15,10 @@ rm:
 
 infra-plan:
 	terraform -chdir=infra init
-	terraform -chdir=infra plan
+	terraform -chdir=infra plan -var="user=${USER}"
 
 infra-apply:
-	-terraform -chdir=infra apply -auto-approve
+	-terraform -chdir=infra apply -auto-approve -var="user=${USER}"
 
 up: infra-apply provision
 

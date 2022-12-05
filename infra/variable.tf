@@ -48,9 +48,14 @@ variable "profile_name" {
   default = "PocProfile"
 }
 
+variable "user" {
+  type    = string
+  default = ""
+}
+
 variable "tags" {
   type        = map(string)
-  default     = { "project" : "POC" }
+  default     = { "project" = "POC" }
   description = "Resource tags"
 }
 
