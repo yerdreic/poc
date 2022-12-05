@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 
 import boto3
 from botocore.exceptions import ClientError
@@ -8,8 +9,8 @@ from botocore.exceptions import ClientError
 
 def main():
 
-    secret_name = "poc"
-    region_name = "eu-central-1"
+    secret_name = os.getenv("SECRET_NAME")
+    region_name = os.getenv("REGION")
 
     # Create a Secrets Manager client
     session = boto3.session.Session()
