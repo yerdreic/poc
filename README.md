@@ -25,6 +25,8 @@ AWS secrets manager (SM) using IAM Roles instead of creds distribution
 - Consumer container ("application")- running in the EC2 instance which
   consumes the secret
 
+![Alt text](./static/coffer_poc.png "Diagram")
+
 ## local DEV Environment
 
 ### pre-commit
