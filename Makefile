@@ -1,28 +1,17 @@
-.PHONY: build run logs rm infra-plan infra-apply provision up down
+.PHONY: init plan bootstrap provision up down
 
 AWS_REGION := $(shell aws configure get region)
 
-build:
-	podman build -t consumer ./consumer
-
-run:
-	podman run -d --name=consumer -v ${HOME}/.aws:/root/.aws:Z consumer
-
-logs:
-	podman logs -f consumer
-
-rm:
-	podman stop consumer
-	podman rm consumer
-
-infra-plan:
+init:
 	terraform -chdir=infra init
+
+plan:
 	terraform -chdir=infra plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
-infra-apply:
+bootstrap:
 	-terraform -chdir=infra apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
-up: infra-apply provision
+up: bootstrap provision
 
 down:
 	terraform -chdir=infra destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
