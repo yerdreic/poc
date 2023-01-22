@@ -3,18 +3,18 @@
 AWS_REGION := $(shell aws configure get region)
 
 init:
-	terragrunt init
+	cd infra/live/dev/ec2_instance && terragrunt init
 
 plan:
-	terragrunt plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	cd infra/live/dev/ec2_instance && terragrunt plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 bootstrap:
-	-terragrunt apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	-cd infra/live/dev/ec2_instance && terragrunt apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 up: bootstrap provision
 
 down:
-	terragrunt destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	cd infra/live/dev/ec2_instance && terragrunt destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 provision:
 	ansible-galaxy install -r ./provision/requirements.yml
