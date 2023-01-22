@@ -76,6 +76,7 @@ make rm
 - `boto3` >= 1.18.0
 - `botocore` >= 1.21.0
 - `terraform`
+- `terragrunt`
 - `awscli`
 
 ### Environment Up
