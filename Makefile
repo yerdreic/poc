@@ -1,20 +1,30 @@
 .PHONY: init plan bootstrap provision up down
 
-AWS_REGION := $(shell aws configure get region)
+
+ENV := dev
+
+ifdef CI
+	ENV := ci
+	AWS_REGION := ${AWS_REGION}
+else
+	AWS_REGION := $(shell aws configure get region)
+endif
+
 
 init:
-	cd infra/live/dev/ec2_instance && terragrunt init
+	echo ${ENV}
+	cd infra/live/${ENV}/ec2_instance && terragrunt init
 
 plan:
-	cd infra/live/dev/ec2_instance && terragrunt plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	cd infra/live/${ENV}/ec2_instance && terragrunt plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 bootstrap:
-	-cd infra/live/dev/ec2_instance && terragrunt apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	-cd infra/live/${ENV}/ec2_instance && terragrunt apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 up: bootstrap provision
 
 down:
-	cd infra/live/dev/ec2_instance && terragrunt destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
+	cd infra/live/${ENV}/ec2_instance && terragrunt destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 provision:
 	ansible-galaxy install -r ./provision/requirements.yml
