@@ -21,7 +21,7 @@ jobs:
       - uses: pre-commit/action@v3.0.0
 
       - name: Setup
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
 
       - uses: eLco/setup-terragrunt@v1.0.2
         with:
