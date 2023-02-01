@@ -5,7 +5,7 @@ variable "ssh_key_name" {
 
 variable "ssh_private_file_name" {
   type    = string
-  default = "poc-aws-key.pem"
+  default = "/workspace/tf-artifactory-ssh-key.pem"
 }
 
 variable "sg_name" {
@@ -48,9 +48,14 @@ variable "user" {
   default = ""
 }
 
+variable "aws_profile" {
+  type    = string
+  default = "default"
+}
+
 variable "tags" {
   type        = map(string)
-  default     = { "Project" = "POC" }
+  default     = { "Project" = "Platform Engineering" }
   description = "Resource tags"
 }
 

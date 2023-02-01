@@ -42,42 +42,25 @@ pre-commit install
 
 [Renovate][2] takes care of it
 
-### Building consumer image
-
-```shell
-make build
-```
-
-### Running consumer container
-
-```shell
-make run
-```
-
-### Viewing consumer container logs
-
-```shell
-make logs
-```
-
-### Stopping and removing consumer container
-
-```shell
-make rm
-```
-
 ## PROD environment
 
 ### System Requirements
 
+- AWS [credentials settings][1], profile __default__
 - `make`
-- `ansible`
-- `python` >= 3.6
-- `boto3` >= 1.18.0
-- `botocore` >= 1.21.0
-- `terraform`
-- `terragrunt`
-- `awscli`
+- `podman` or `docker`
+
+### Environment init
+
+```shell
+make init
+```
+
+### Environment reconfigure
+
+```shell
+make reconfigure
+```
 
 ### Environment Up
 
