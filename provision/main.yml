@@ -19,10 +19,10 @@
     - name: Run consumer container
       containers.podman.podman_container:
         name: consumer
-        image: ghcr.io/coffr/poc:main
+        image: ghcr.io/platform-engineering-org/poc:main
         detach: true
         state: started
         recreate: true
         env:
           SECRET_NAME: "poc"
-          REGION: "{{ REGION }}"
+          REGION: "{{ AWS_REGION }}"

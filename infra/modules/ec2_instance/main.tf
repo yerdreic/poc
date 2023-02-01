@@ -1,16 +1,22 @@
 terraform {
+  backend "s3" {
+    bucket  = "pe-tf-state"
+    key     = "ec2_instance/terraform.tfstate"
+    region  = "eu-west-2"
+    encrypt = true
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 4.41"
     }
   }
-
   required_version = ">= 1.2.0"
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = var.aws_profile
   default_tags {
     tags = merge(var.tags, { User = var.user })
   }
@@ -49,100 +55,92 @@ resource "aws_security_group" "poc_allow_ssh" {
   }
 }
 
-resource "aws_iam_policy" "poc_ec2_policy" {
-  name        = var.policy_name
-  description = "Policy to provide permissions to poc-ec2 instance"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "secretsmanager:GetResourcePolicy",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:ListSecretVersionIds",
-          "secretsmanager:ListSecrets"
-        ],
-        "Resource" : [
-          "*"
-        ]
-      }
+data "aws_iam_policy_document" "assume_policy" {
+  statement {
+    sid = "1"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = [
+      "sts:AssumeRole"
     ]
-  })
+  }
+}
+
+data "aws_iam_policy_document" "iam_policy_document" {
+  statement {
+    sid = "1"
+
+    actions = [
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:ListSecretVersionIds",
+      "secretsmanager:ListSecrets"
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
 }
 
 resource "aws_iam_role" "poc_ec2_role" {
-  name = var.iam_role_name
-  assume_role_policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Sid" : "",
-        "Effect" : "Allow",
-        "Principal" : {
-          "Service" : "ec2.amazonaws.com"
-        },
-        "Action" : "sts:AssumeRole"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy_attachment" "poc_attach_policy_to_role" {
-  name       = "ec2Attachment"
-  roles      = [aws_iam_role.poc_ec2_role.name]
-  policy_arn = aws_iam_policy.poc_ec2_policy.arn
+  name               = var.iam_role_name
+  assume_role_policy = data.aws_iam_policy_document.assume_policy.json
+  inline_policy {
+    name   = var.policy_name
+    policy = data.aws_iam_policy_document.iam_policy_document.json
+  }
 }
 
 resource "aws_iam_instance_profile" "poc_ec2_profile" {
   name = var.profile_name
   role = aws_iam_role.poc_ec2_role.name
 }
-resource "tls_private_key" "poc_rsa" {
+resource "tls_private_key" "tls_private_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_key_pair" "poc_key_pair" {
+resource "aws_key_pair" "key_pair" {
   key_name   = var.ssh_key_name
-  public_key = tls_private_key.poc_rsa.public_key_openssh
+  public_key = tls_private_key.tls_private_key.public_key_openssh
+}
 
-  provisioner "local-exec" {
-    when    = create
-    command = "echo '${tls_private_key.poc_rsa.private_key_openssh}' > ~/.ssh/${var.ssh_private_file_name}; chmod 400 ~/.ssh/${var.ssh_private_file_name}"
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "rm ~/.ssh/${self.id}.pem"
-  }
+resource "local_file" "private_key" {
+  content         = tls_private_key.tls_private_key.private_key_openssh
+  filename        = var.ssh_private_file_name
+  file_permission = 0400
 }
 
 resource "aws_instance" "poc_instance" {
   depends_on = [
-    tls_private_key.poc_rsa
+    tls_private_key.tls_private_key
   ]
   ami                    = data.aws_ami.centos_stream_8.id
   instance_type          = var.ec2_type
   vpc_security_group_ids = [aws_security_group.poc_allow_ssh.id]
   iam_instance_profile   = aws_iam_instance_profile.poc_ec2_profile.name
-  key_name               = aws_key_pair.poc_key_pair.key_name
+  key_name               = aws_key_pair.key_pair.key_name
   tags                   = merge(var.tags, { Name = var.ec2_name })
 }
 
-resource "aws_secretsmanager_secret" "poc_secret" {
-  name        = var.secret_name
-  description = "secret to store the credentials"
-}
+# resource "aws_secretsmanager_secret" "poc_secret" {
+#   name        = var.secret_name
+#   description = "secret to store the credentials"
+# }
 
-resource "aws_secretsmanager_secret_version" "poc_secret" {
-  secret_id     = aws_secretsmanager_secret.poc_secret.id
-  secret_string = jsonencode(var.secret)
-  # Terraform should no longer attempt to apply a new password.
-  lifecycle {
-    ignore_changes = [
-      secret_string
-    ]
-  }
-}
+# resource "aws_secretsmanager_secret_version" "poc_secret" {
+#   secret_id     = aws_secretsmanager_secret.poc_secret.id
+#   secret_string = jsonencode(var.secret)
+#   # Terraform should no longer attempt to apply a new password.
+#   lifecycle {
+#     ignore_changes = [
+#       secret_string
+#     ]
+#   }
+# }
