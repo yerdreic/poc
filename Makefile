@@ -6,30 +6,28 @@
 ENV := dev
 
 ifndef OS_ENV
-ifneq ($(shell which docker),)
-ENGINE := docker
-else ifneq ($(shell which podman),)
-ENGINE := podman
-else
-$(error Container engine can't be found)
-endif
+    ifneq ($(shell command -v docker),)
+        ENGINE := docker
+    else ifneq ($(shell command -v podman),)
+        ENGINE := podman
+    else
+        $(error Container engine can't be found)
+    endif
 endif
 
 ifeq ($(ENV), dev)
 	ifndef AWS_REGION
 	    AWS_REGION := $(shell aws configure get region)
 	endif
-	AWS_PROFILE := default
 else ifeq ($(ENV), ci)
 	AWS_REGION := ${AWS_REGION}
 else ifeq ($(ENV), stage)
 	AWS_REGION := ${AWS_REGION}
-	AWS_PROFILE := stage
 endif
 
 HELPER_IMAGE := ghcr.io/platform-engineering-org/helper:latest
 in_container = ${ENGINE} run --rm --name helper -v $(PWD):/workspace:rw -v ~/.aws:/root/.aws:ro -w /workspace --security-opt label=disable --env USER=${USER} --env AWS_REGION=${AWS_REGION} --env OS_ENV=container ${HELPER_IMAGE} echo ${ENV} && make $1
-TERRAGRUNT_CMD = cd infra/live/${ENV}/ec2_instance && terragrunt
+TERRAGRUNT_CMD = cd infra/live/${ENV} && terragrunt run-all --terragrunt-non-interactive
 
 
 init-in-container:
@@ -42,17 +40,17 @@ upgrade-in-container:
 	${TERRAGRUNT_CMD} init --upgrade
 
 plan-in-container:
-	${TERRAGRUNT_CMD} plan -var "user=${USER}" -var "aws_region=${AWS_REGION}" -var "aws_profile=${AWS_PROFILE}"
+	${TERRAGRUNT_CMD} plan -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 bootstrap-in-container:
-	${TERRAGRUNT_CMD} apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}" -var "aws_profile=${AWS_PROFILE}"
+	${TERRAGRUNT_CMD} apply -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 provision-in-container:
 	ansible-galaxy install -r ./provision/requirements.yml
-	ANSIBLE_CONFIG="./provision/ansible.cfg" AWS_PROFILE=${AWS_PROFILE} ansible-playbook -e ENV=${ENV} -e AWS_REGION=${AWS_REGION} ./provision/main.yml
+	ANSIBLE_CONFIG="./provision/ansible.cfg" ansible-playbook -e ENV=${ENV} -e AWS_REGION=${AWS_REGION} ./provision/main.yml
 
 down-in-container:
-	${TERRAGRUNT_CMD} destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}" -var "aws_profile=${AWS_PROFILE}"
+	${TERRAGRUNT_CMD} destroy -auto-approve -var "user=${USER}" -var "aws_region=${AWS_REGION}"
 
 init:
 	$(call in_container,init-in-container)

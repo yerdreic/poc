@@ -4,3 +4,4 @@
 *.tfstate.*
 .terragrunt-cache/
 *.lock.hcl
+.pulumi
