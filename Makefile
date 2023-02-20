@@ -1,9 +1,14 @@
 .PHONY: init reconfigure upgrade plan bootstrap provision up down \
 		init-in-container reconfigure-in-container upgrade-in-container \
 		plan-in-container bootstrap-in-container provision-in-container \
-		down-in-container
+		down-in-container dev-up dev-down
 
 ENV := dev
+AWS_ACCESS_KEY_ID := $(shell aws configure get default.aws_access_key_id)
+AWS_SECRET_ACCESS_KEY := $(shell aws configure get default.aws_secret_access_key)
+AWS_DEFAULT_REGION := eu-west-2
+PULL_SECRET_ABS_PATH := ~/Downloads/pull-secret.txt
+
 
 ifndef OS_ENV
     ifneq ($(shell command -v docker),)
@@ -75,3 +80,31 @@ down:
 
 provision:
 	$(call in_container,provision-in-container)
+
+dev-up:
+
+	podman run --rm \
+    -v ${PWD}:/workspace:z \
+	-v ${PULL_SECRET_ABS_PATH}:/pullsecret/pull-secret.txt:z \
+	-e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	-e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	-e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+    quay.io/crcont/crc-cloud:v0.0.2 \
+	create aws \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --output "/workspace" \
+        --aws-ami-id "ami-019669c0960dbcf14" \
+        --pullsecret-filepath "/pullsecret/pull-secret.txt" \
+        --key-filepath "/workspace/id_ecdsa"
+
+dev-down:
+	podman run -d --rm \
+    -v ${PWD}:/workspace:z \
+	-e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+	-e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+	-e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+    quay.io/crcont/crc-cloud:v0.0.2 destroy \
+        --project-name "crc-ocp412" \
+        --backed-url "file:///workspace" \
+        --provider "aws"
