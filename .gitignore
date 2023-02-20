@@ -5,3 +5,7 @@
 .terragrunt-cache/
 *.lock.hcl
 .pulumi
+host
+id_rsa
+password
+username
