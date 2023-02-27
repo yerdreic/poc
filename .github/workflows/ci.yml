@@ -1,15 +1,26 @@
-name: ci
+name: CI Workflow
 
 on:
   pull_request:
     branches:
       - main
 
-  workflow_dispatch:
-
 jobs:
+  block-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from forked repo
+        id: check_forked
+        run: |
+          if [[ ${{ github.event.pull_request.head.repo.full_name }} != ${{ github.event.pull_request.base.repo.full_name }} ]]; then
+            echo "This pull request was pushed from a forked repository, which is not allowed. Please push changes from a branch in the upstream repository"
+            exit 1
+          else
+            echo "This PR is from upstream repo."
+          fi
   ci:
     runs-on: ubuntu-latest
+    needs: block-pr
 
     permissions:
       id-token: write
@@ -37,3 +48,113 @@ jobs:
 
       - name: Plan
         run: make ENV=ci plan-in-container
+
+  crc-cloud:
+    runs-on: ubuntu-latest
+    needs: block-pr
+
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Write pullsecret
+        env:
+          PULLSECRET_BASE64: ${{ secrets.PS_64 }}
+        run: |
+          echo $PULLSECRET_BASE64 | base64 --decode > pullsecret.txt
+
+      - name: Write boot key
+        run: |
+          echo "${{ secrets.ID_ECDSA }}" > key.txt
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ROLE }}
+          aws-region: eu-west-2
+
+      - name: Create cluster
+        run: |
+          docker run -d --name crc-cloud-create --rm \
+          -v ${PWD}:/workspace:z \
+          -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+          -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+          -e AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
+          -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+          quay.io/crcont/crc-cloud:v0.0.2 \
+          create aws \
+          --project-name "crc-ocp412" \
+          --backed-url "file:///workspace" \
+          --output "/workspace" \
+          --aws-ami-id "ami-019669c0960dbcf14" \
+          --pullsecret-filepath /workspace/pullsecret.txt \
+          --key-filepath /workspace/key.txt
+
+      - name: View cluster creation logs
+        continue-on-error: true
+        run: |
+          docker logs -f crc-cloud-create
+
+      - name: Check cluster config
+        continue-on-error: true
+        run: |
+          ls -al /tmp
+          pwd
+          ls -al
+          ssh -i id_rsa core@$(cat host) "cat /opt/kubeconfig"
+
+      - name: Destroy cluster
+        run: |
+          docker run -d --name crccloud-destroy --rm \
+          -v ${PWD}:/workspace:z \
+          -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+          -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+          -e AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN} \
+          -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+          quay.io/crcont/crc-cloud:v0.0.2 \
+          destroy \
+          --project-name "crc-ocp412" \
+          --backed-url "file:///workspace" \
+          --provider "aws"
+
+      - name: View cluster destroy logs
+        run: |
+          docker logs -f crccloud-destroy
+
+
+  build-and-push-image:
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    runs-on: ubuntu-latest
+    needs: [ci, crc-cloud]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./consumer
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
